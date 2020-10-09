@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FileSystemVarianceLib
 {
-    class DirectoryInfo : AbstractObjectInfo, ICreatedDateReturnable
+    class DirectoryInfo : AbstractObjectInfo
     {
         private bool _LastChangedDateCalculated;
         private bool _ByteSizeCalculated;
@@ -29,13 +30,29 @@ namespace FileSystemVarianceLib
                 _Name = value;
             }
         }
-        public long ByteSize
+
+        public DirectoryInfo(string fullPath)
         {
-            get => _ByteSize;
-            private set
-            {
-                _ByteSize = value;
-            }
+            _FullPath = fullPath;
+            var fileInfo = new FileInfo(_FullPath);
+
+            _Name = fileInfo.Name;
+            _CreatedDate = fileInfo.CreationTime;
+
+            _Contain = FindContainObjects(_FullPath);
+        }
+
+        private List<AbstractObjectInfo> FindContainObjects(string path)
+        {
+            List<AbstractObjectInfo> res = new List<AbstractObjectInfo>();
+
+            var files = Directory.GetFiles(path).Select(file => new FileObjectInfo(file));
+            res.AddRange(files);
+
+            var dirs = Directory.GetDirectories(path).Select(dir => new DirectoryInfo(dir));
+            res.AddRange(dirs);
+
+            return res;
         }
 
         public override DateTime GetCreatedDate()
@@ -47,7 +64,14 @@ namespace FileSystemVarianceLib
         {
             if (!_LastChangedDateCalculated)
             {
-                _LastChangedDate = _Contain.Max(x => x.GetLastChangedDate());
+                if(_Contain.Count == 0)
+                {
+                    _LastChangedDate = _CreatedDate;
+                }
+                else
+                {
+                    _LastChangedDate = _Contain.Max(x => x.GetLastChangedDate());
+                }
                 _LastChangedDateCalculated = true;
             }
             return _LastChangedDate;

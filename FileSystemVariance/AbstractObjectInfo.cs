@@ -2,8 +2,9 @@
 
 namespace FileSystemVarianceLib
 {
-    abstract class AbstractObjectInfo : ICreatedDateReturnable, ILastChangedDateReturnable, IByteSizeReturnable
+    abstract class AbstractObjectInfo : IObjectInfoReturnable
     {
+        protected string _FullPath;
         protected string _Name;
         protected DateTime _CreatedDate;
         protected DateTime _LastChangedDate;

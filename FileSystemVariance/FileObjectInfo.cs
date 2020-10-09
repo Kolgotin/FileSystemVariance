@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FileSystemVarianceLib
 {
-    class FileInfo : AbstractObjectInfo, ICreatedDateReturnable
+    class FileObjectInfo : AbstractObjectInfo
     {
         public string Name
         {
@@ -16,16 +17,20 @@ namespace FileSystemVarianceLib
                 _Name = value;
             }
         }
-        public long ByteSize
+
+        public FileObjectInfo(string fullPath)
         {
-            get => _ByteSize;
-            private set
-            {
-                _ByteSize = value;
-            }
+            _FullPath = fullPath;
+            var fileInfo = new FileInfo(_FullPath);
+
+            _Name = fileInfo.Name;
+            _CreatedDate = fileInfo.CreationTime;
+            _LastChangedDate = fileInfo.LastWriteTime;
+            _ByteSize = fileInfo.Length;
+
         }
 
-        public override DateTime GetCreatedDate()
+    public override DateTime GetCreatedDate()
         {
             return _CreatedDate;
         }
